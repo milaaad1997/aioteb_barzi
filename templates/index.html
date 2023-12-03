@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>تشخیص علائم پزشکی</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="div2">
+        <button class="btn" onclick="start()">start</button>
+        <div id="div1" style="display: none;">
+            <form class="form1" id="symptomsForm">
+                {% for sign in signs %}
+                <label>{{ sign }}: </label>
+                <input type="radio" name="{{ sign }}" value="1"> بله
+                <input type="radio" name="{{ sign }}" value="0"> خیر
+                <br>
+                {% endfor %}
+            </form>
+            <button class="btn" type="button" id="submitForm">تشخیص</button>
+            <div id="results"></div>
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        function start () {
+            document.getElementById('div1').style.display = "block"
+
+        }
+
+            document.getElementById('submitForm').addEventListener('click', function() {
+            var formElements = document.getElementById('symptomsForm').elements;
+            var formData = {};
+            for (var i = 0; i < formElements.length; i++) {
+                if (formElements[i].type === 'radio' && formElements[i].checked) {
+                    formData[formElements[i].name] = formElements[i].value;
+                }
+            }
+
+            fetch('/diagnose', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            }).then(response => response.json()).then(data => {
+                var resultsContainer = document.getElementById('results');
+                resultsContainer.innerHTML = `<p>${data.health_status}</p>`;
+                data.results.forEach(function(result) {
+                    resultsContainer.innerHTML += `<p>${result.percentage}: ${result.sign}</p>`;
+                });
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
